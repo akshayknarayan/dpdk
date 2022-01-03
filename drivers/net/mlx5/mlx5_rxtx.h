@@ -574,6 +574,10 @@ mlx5_rx_addr2mr(struct mlx5_rxq_data *rxq, uintptr_t addr)
 
 #define mlx5_rx_mb2mr(rxq, mb) mlx5_rx_addr2mr(rxq, (uintptr_t)((mb)->buf_addr))
 
+struct mem_info {
+    uint32_t lkey;
+    uint16_t lkey_present;
+};
 /**
  * Query LKey from a packet buffer for Tx. If not found, add the mempool.
  *
@@ -588,6 +592,12 @@ mlx5_rx_addr2mr(struct mlx5_rxq_data *rxq, uintptr_t addr)
 static __rte_always_inline uint32_t
 mlx5_tx_mb2mr(struct mlx5_txq_data *txq, struct rte_mbuf *mb)
 {
+    // if lkey is in private data of mbuf, return it
+    struct mem_info *m = (struct mem_info *)(((char *) mb) + sizeof(struct rte_mbuf));
+    if (m->lkey_present == 1) {
+        return (uint32_t)m->lkey;
+    }
+
 	struct mlx5_mr_ctrl *mr_ctrl = &txq->mr_ctrl;
 	uintptr_t addr = (uintptr_t)mb->buf_addr;
 	uint32_t lkey;

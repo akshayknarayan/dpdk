@@ -609,6 +609,12 @@ int rte_mempool_op_populate_default(struct rte_mempool *mp,
 typedef int (*rte_mempool_get_info_t)(const struct rte_mempool *mp,
 		struct rte_mempool_info *info);
 
+/**
+ * Run an additional callback when objects are put back into the cache or
+ * enqueued.
+ * */
+typedef int (*rte_mempool_obj_free_t)(void * const *obj_table, unsigned int n);
+
 
 /** Structure defining mempool operations structure */
 struct rte_mempool_ops {
@@ -618,6 +624,7 @@ struct rte_mempool_ops {
 	rte_mempool_enqueue_t enqueue;   /**< Enqueue an object. */
 	rte_mempool_dequeue_t dequeue;   /**< Dequeue an object. */
 	rte_mempool_get_count get_count; /**< Get qty of available objs. */
+    rte_mempool_obj_free_t obj_free; /**< Optional callback for per-object freeing before adding to cache. */
 	/**
 	 * Optional callback to calculate memory size required to
 	 * store specified number of objects.
@@ -761,6 +768,21 @@ rte_mempool_ops_enqueue_bulk(struct rte_mempool *mp, void * const *obj_table,
 	rte_mempool_trace_ops_enqueue_bulk(mp, obj_table, n);
 	ops = rte_mempool_get_ops(mp->ops_index);
 	return ops->enqueue(mp, obj_table, n);
+}
+
+/**
+ * Extra function to free stuff.
+ * */
+static inline int
+rte_mempool_ops_obj_free_bulk(struct rte_mempool *mp, void * const *obj_table,
+        unsigned n)
+{
+    struct rte_mempool_ops *ops;
+    ops = rte_mempool_get_ops(mp->ops_index);
+    if (ops->obj_free != NULL) {
+        return ops->obj_free(obj_table, n);
+    }
+    return 0;
 }
 
 /**
@@ -1289,6 +1311,9 @@ __mempool_generic_put(struct rte_mempool *mp, void * const *obj_table,
 
 	/* increment stat now, adding in mempool always success */
 	__MEMPOOL_STAT_ADD(mp, put, n);
+
+    /* Call user-defined object callback */
+    rte_mempool_ops_obj_free_bulk(mp, obj_table, n);
 
 	/* No cache provided or if put would overflow mem allocated for cache */
 	if (unlikely(cache == NULL || n > RTE_MEMPOOL_CACHE_MAX_SIZE))

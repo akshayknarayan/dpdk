@@ -183,6 +183,9 @@ rte_mempool_obj_iter(struct rte_mempool *mp,
 
 	STAILQ_FOREACH(hdr, &mp->elt_list, next) {
 		obj = (char *)hdr + sizeof(*hdr);
+        /*if ((n < 10) || ( n >= 8189)) {
+            printf("[mempool %s], obj # %u, hdr addr: %p, obj addr: %p, hdr size: %u; size of memhdr: %u\n", mp->name, (unsigned)n, hdr, obj, (unsigned)(sizeof(*hdr)), (unsigned)(sizeof(struct rte_mempool_memhdr)));
+        }*/
 		obj_cb(mp, obj_cb_arg, obj, n);
 		n++;
 	}
@@ -199,6 +202,9 @@ rte_mempool_mem_iter(struct rte_mempool *mp,
 	unsigned n = 0;
 
 	STAILQ_FOREACH(hdr, &mp->mem_list, next) {
+        /*if ((n < 10) || (n > 8189)) {
+            printf("[mempool %s] obj # %u, hdr addr: %p, hdr size: %u, memhdr_addr: %p\n", mp->name, (unsigned)n, hdr, (unsigned)(sizeof(*hdr)), hdr->addr);
+        }*/
 		mem_cb(mp, mem_cb_arg, hdr, n);
 		n++;
 	}

@@ -1862,6 +1862,23 @@ rte_pmd_mlx5_get_dyn_flag_names(char *names[], unsigned int n)
 	return RTE_DIM(dynf_names);
 }
 
+void *
+rte_pmd_mlx5_manual_reg_mr(uint8_t port_id, void *addr, size_t length, uint32_t *lkey_out)
+{
+    struct rte_eth_dev *dev = &rte_eth_devices[port_id];
+    struct mlx5_priv *priv = dev->data->dev_private;
+    struct ibv_mr *ibv_mr = mlx5_glue->reg_mr(priv->sh->pd, addr, length, IBV_ACCESS_LOCAL_WRITE);
+    if (ibv_mr && lkey_out) *lkey_out = rte_cpu_to_be_32(ibv_mr->lkey);
+    return ibv_mr;
+}
+
+void
+rte_pmd_mlx5_manual_dereg_mr(void *ibv_mr)
+{
+    mlx5_glue->dereg_mr(ibv_mr);
+}
+
+
 /**
  * Comparison callback to sort device data.
  *

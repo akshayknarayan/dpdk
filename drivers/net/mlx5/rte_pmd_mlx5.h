@@ -57,4 +57,10 @@ int rte_pmd_mlx5_get_dyn_flag_names(char *names[], unsigned int n);
 __rte_experimental
 int rte_pmd_mlx5_sync_flow(uint16_t port_id, uint32_t domains);
 
+__rte_experimental
+void *rte_pmd_mlx5_manual_reg_mr(uint8_t port_id, void *addr, size_t length, uint32_t *lkey_out);
+
+__rte_experimental
+void rte_pmd_mlx5_manual_dereg_mr(void *ibv_mr);
+
 #endif

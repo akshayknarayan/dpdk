@@ -546,3 +546,4 @@ mlx5_mr_update_mp(struct rte_eth_dev *dev, struct mlx5_mr_ctrl *mr_ctrl,
 	}
 	return data.ret;
 }
+

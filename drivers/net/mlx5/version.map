@@ -9,4 +9,8 @@ EXPERIMENTAL {
 	rte_pmd_mlx5_get_dyn_flag_names;
 	# added in 20.11
 	rte_pmd_mlx5_sync_flow;
+
+    # added for mlx5 manual memory registration patch
+    rte_pmd_mlx5_manual_reg_mr;
+    rte_pmd_mlx5_manual_dereg_mr;
 };
